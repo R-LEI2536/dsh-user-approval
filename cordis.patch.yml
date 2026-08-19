@@ -1,15 +1,16 @@
 # dsh-user-approval bundle: approval modes
-- id: approval-modes
-  name: dsh-user-approval
-  config:
-    default: off
-    editTools: ['write', 'edit', 'str_replace_editor']
-    shellTools: ['bash', 'pwsh', 'tool:bash', 'tool:pwsh']
-    readOnlyTools: ['read', 'glob', 'grep', 'read_image', 'list_dir']
-    autoAllowTools: ['ask_user_question', 'exit_plan_mode']
-    unclassified: ask
-    sandboxDefaults:
-      request: workspace-write
-      auto-edit: workspace-write
-      yolo: workspace-write
-    askReason: 'approval needed for {tool} under {mode} mode ({family}); read-only browsing should use read/glob/list_dir instead of shell'
+- insert:
+    - id: approval-modes
+      name: dsh-user-approval
+      config:
+        default: off
+        editTools: ['write', 'edit', 'str_replace_editor']
+        shellTools: ['bash', 'pwsh', 'tool:bash', 'tool:pwsh']
+        readOnlyTools: ['read', 'glob', 'grep', 'read_image', 'list_dir']
+        autoAllowTools: ['ask_user_question', 'exit_plan_mode']
+        unclassified: ask
+        sandboxDefaults:
+          request: workspace-write
+          auto-edit: workspace-write
+          yolo: workspace-write
+        askReason: 'approval needed for {tool} under {mode} mode ({family}); read-only browsing should use read/glob/list_dir instead of shell'

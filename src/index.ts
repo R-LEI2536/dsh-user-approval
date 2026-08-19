@@ -25,7 +25,7 @@ import { effectiveSandboxMode, setSandboxMode } from '@deepseek-ai/dsh-sandbox-p
 import type { SandboxMode } from '@deepseek-ai/dsh-sandbox'
 import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-settings'
 import type {} from '@deepseek-ai/dsh-tools'
-import type { CommandInvocation } from '@deepseek-ai/dsh-commands'
+import type {} from '@deepseek-ai/dsh-commands'
 import type {} from '@deepseek-ai/dsh-session-projection'
 
 /** In-memory storage for session approval modes (process-local, not persisted). */
@@ -171,8 +171,7 @@ export function apply(ctx: Context, config: Config): void {
       name: 'approval-mode',
       description: 'Switch the approval mode (request | auto-edit | yolo | off)',
       input: { hint: '<mode>' },
-      handler: (invocation: CommandInvocation) => {
-        const { agent, rawInput } = invocation
+      handler: ({ agent, rawInput }) => {
         const trimmed = rawInput.trim()
         if (trimmed === '') {
           return { kind: 'success', text: `current approval mode: ${effectiveMode(agent.session)} (available: ${APPROVAL_MODES.join(', ')})` }
