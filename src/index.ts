@@ -48,6 +48,7 @@ declare module '@deepseek-ai/cordis' {
 /** In-memory storage for session approval modes (process-local, not persisted). */
 const sessionModes = new WeakMap<Session, ApprovalMode>()
 export const name = 'dsh-user-approval'
+export const inject = ['sandboxPolicy', 'shell', 'sessions']
 
 /** 审批模式闭值。`ask` 留给 approval policy，这里不用。 */
 export type ApprovalMode = 'request' | 'auto-edit' | 'yolo' | 'off'
