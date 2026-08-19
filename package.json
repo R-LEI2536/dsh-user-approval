@@ -17,6 +17,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
+    "zod": "^4.4.3",
     "dsh-tool-list-dir": "github:R-LEI2536/dsh-tool-list-dir"
   },
   "peerDependencies": {

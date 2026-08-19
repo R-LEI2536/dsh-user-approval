@@ -48,6 +48,8 @@ User approval modes plugin for DeepSeek Harness. Provides four approval modes to
 - **Sandbox**: Restores to composition default (usually `read-only`)
 - **Use Case**: Temporarily disable the plugin without uninstalling
 
+**Note**: When switching approval modes, the sandbox mode is automatically adjusted to the configured default value. This will override any previous manual sandbox adjustments you made. If you wish to use a different sandbox mode with the new approval mode, you can manually adjust the sandbox again after switching.
+
 ## Installation
 
 ### From GitHub

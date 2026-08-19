@@ -11,6 +11,9 @@ importers:
       dsh-tool-list-dir:
         specifier: github:R-LEI2536/dsh-tool-list-dir
         version: https://codeload.github.com/R-LEI2536/dsh-tool-list-dir/tar.gz/7a30302127fb2f86bad391e245bb1667317751d2(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-fs@0.1.0-rc.7(7991753c264b1d907549a3df5a6ef9ed))(@deepseek-ai/dsh-tools@0.1.0-rc.7(38c91eb2d47c5b4ba2c8ead86dfcb4aa))
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@deepseek-ai/cordis':
         specifier: ^4.0.1

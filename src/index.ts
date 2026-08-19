@@ -27,10 +27,28 @@ import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-sett
 import type {} from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-commands'
 import type {} from '@deepseek-ai/dsh-session-projection'
+import { z } from 'zod'
+
+// 扩展 SessionProjectionMap 类型声明
+declare module '@deepseek-ai/dsh-session-projection/types' {
+  interface SessionProjectionMap {
+    approvalMode: { mode: string; options: string[] }
+  }
+}
+
+// 扩展 Context 类型声明（仅声明 shell，因为 sandboxPolicy 和 sessions 已在其他包中声明）
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    shell?: {
+      sandboxMode?: SandboxMode
+    }
+  }
+}
 
 /** In-memory storage for session approval modes (process-local, not persisted). */
 const sessionModes = new WeakMap<Session, ApprovalMode>()
 export const name = 'approval-modes'
+export const inject = ['sandboxPolicy', 'shell', 'sessions']
 
 /** 审批模式闭值。`ask` 留给 approval policy，这里不用。 */
 export type ApprovalMode = 'request' | 'auto-edit' | 'yolo' | 'off'
@@ -109,9 +127,7 @@ export function apply(ctx: Context, config: Config): void {
   }
 
   // 组合默认 sandbox：无 session 覆盖时沙箱旋钮应落回的值（off 联动写回它）。
-  const sandboxPolicy = ctx.get('sandboxPolicy') as { defaultMode?: string } | undefined
-  const shell = ctx.get('shell') as { sandboxMode?: string } | undefined
-  const compositionDefaultSandbox = sandboxPolicy?.defaultMode ?? shell?.sandboxMode ?? 'workspace-write'
+  const compositionDefaultSandbox = ctx.sandboxPolicy?.defaultMode ?? ctx.shell?.sandboxMode ?? 'workspace-write'
 
   // 可变默认：settings 层更新会替换它（同 permission-presets 的 defaultSettings）。
   // setSource 收到的是「读取函数」（() => scope.get()），所以这里保存 thunk、读取时再调用。
@@ -200,25 +216,28 @@ export function apply(ctx: Context, config: Config): void {
     if (!sessionModes.has(session)) setApprovalMode(session, defaultSettings().default)
   }
   ctx.on('session/created', (session) => { pin(session) })
-  const sessions = ctx.get('sessions') as { list(): Session[] } | undefined
-  for (const session of sessions?.list() ?? []) pin(session)
+  for (const session of ctx.sessions?.list() ?? []) pin(session)
 
   // ── 投影：为客户端 UI 留路（芯片/快捷键后续再做） ─────────────────────
   ctx.inject(['sessionProjections'], (projectionCtx) => {
-    // 投影注册表运行时只调用 schema.parse 验证 view 输出（session-projection
-    // index.ts 的 ProjectionDefinition.schema 就是 `{ parse }` 结构）；view 输出
-    // 是平凡 JSON，这里用鸭子类型替代 zod（scratch 插件无法解析裸 zod 包）。
-    const schema = { parse: (value: unknown): unknown => value }
+    const schema = z.object({
+      mode: z.string(),
+      options: z.array(z.string())
+    })
+    
     projectionCtx.sessionProjections.register({
       key: 'approvalMode',
       schema,
-      init: () => ({ mode: null as string | null }),
-      apply: (state: { mode: string | null }, _event: SessionEvent) => {
+      init: () => ({ mode: '' }),
+      apply: (state: { mode: string }, _event: SessionEvent) => {
         // No longer tracking approval/mode events; state remains unchanged
         return state
       },
-      view: (state: { mode: string | null }) => ({ mode: state.mode ?? defaultSettings().default, options: [...APPROVAL_MODES] }),
+      view: (state: { mode: string }) => ({ 
+        mode: state.mode || defaultSettings().default, 
+        options: [...APPROVAL_MODES] 
+      }),
       stateVersion: 1,
-    } as never)
+    })
   })
 }
