@@ -48,7 +48,6 @@ declare module '@deepseek-ai/cordis' {
 /** In-memory storage for session approval modes (process-local, not persisted). */
 const sessionModes = new WeakMap<Session, ApprovalMode>()
 export const name = 'dsh-user-approval'
-export const inject = ['sandboxPolicy', 'shell', 'sessions']
 
 /** 审批模式闭值。`ask` 留给 approval policy，这里不用。 */
 export type ApprovalMode = 'request' | 'auto-edit' | 'yolo' | 'off'
@@ -127,7 +126,10 @@ export function apply(ctx: Context, config: Config): void {
   }
 
   // 组合默认 sandbox：无 session 覆盖时沙箱旋钮应落回的值（off 联动写回它）。
-  const compositionDefaultSandbox = ctx.sandboxPolicy?.defaultMode ?? ctx.shell?.sandboxMode ?? 'workspace-write'
+  // 使用 ctx.get() 而不是 inject 声明，避免fiber启动依赖
+  const sandboxPolicy = ctx.get('sandboxPolicy') as { defaultMode?: string } | undefined
+  const shell = ctx.get('shell') as { sandboxMode?: string } | undefined
+  const compositionDefaultSandbox = sandboxPolicy?.defaultMode ?? shell?.sandboxMode ?? 'workspace-write'
 
   // 可变默认：settings 层更新会替换它（同 permission-presets 的 defaultSettings）。
   // setSource 收到的是「读取函数」（() => scope.get()），所以这里保存 thunk、读取时再调用。
@@ -216,7 +218,8 @@ export function apply(ctx: Context, config: Config): void {
     if (!sessionModes.has(session)) setApprovalMode(session, defaultSettings().default)
   }
   ctx.on('session/created', (session) => { pin(session) })
-  for (const session of ctx.sessions?.list() ?? []) pin(session)
+  const sessions = ctx.get('sessions') as { list(): Session[] } | undefined
+  for (const session of sessions?.list() ?? []) pin(session)
 
   // ── 投影：为客户端 UI 留路（芯片/快捷键后续再做） ─────────────────────
   ctx.inject(['sessionProjections'], (projectionCtx) => {
