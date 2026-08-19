@@ -1,6 +1,6 @@
 # dsh-user-approval bundle: approval modes
 - insert:
-    - id: approval-modes
+    - id: dsh-user-approval
       name: dsh-user-approval
       config:
         default: off
