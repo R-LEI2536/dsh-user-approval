@@ -47,7 +47,7 @@ User approval modes plugin for DeepSeek Harness. Provides four approval modes to
 
 #### `off` - Disabled
 - **Behavior**: Plugin disabled, restore default DSH approval behavior
-- **Sandbox**: Restores to composition default (usually `read-only`)
+- **Sandbox**: Restores to composition default
 - **Use Case**: Temporarily disable the plugin without uninstalling
 
 **Note**: When switching approval modes, the sandbox mode is automatically adjusted to the configured default value. This will override any previous manual sandbox adjustments you made. If you wish to use a different sandbox mode with the new approval mode, you can manually adjust the sandbox again after switching.
@@ -63,21 +63,18 @@ dsh plugin --profile web add github:R-LEI2536/dsh-user-approval
 ### From Local Directory (Development)
 
 ```bash
-dsh plugin --profile web add link:/path/to/dsh-user-approval
+dsh plugin --profile web add /path/to/dsh-user-approval
 ```
 
 ## Usage
 
 ### Using the Web UI Mode Selector
 
-The plugin provides a visual mode selector chip under the input box in DSH Web:
+The plugin provides a visual mode selector in DSH Web (displayed as a small button/chip under the input box):
 
-- Click the chip to open a dropdown menu
-- Select the desired approval mode from the list
-- Current mode is highlighted and displayed in the chip
-- Available modes: `Off`, `Request`, `Auto-edit`, `Yolo`
+**Location**: In the toolbar below the chat input box, you'll see a button showing the current mode (e.g., "Approval: Off")
 
-This is the easiest way to switch modes without typing commands.
+This is the easiest way to switch modes, recommended for daily use.
 
 ### Switch Approval Mode via Command
 
