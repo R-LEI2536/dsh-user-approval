@@ -19,7 +19,7 @@
 
 ## 审批模式
 
-四种审批模式灵感来源于 [Qwen Code](https://github.com/QwenLM/Qwen-Code)。
+审批模式灵感来源于 [Qwen Code](https://github.com/QwenLM/Qwen-Code)。
 
 | 模式 | 编辑工具 | Shell 工具 | 其他工具 | 只读工具 | 使用场景 |
 |------|---------|-----------|---------|---------|----------|
