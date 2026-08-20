@@ -49,15 +49,19 @@ export function ApprovalModeChip({ switchMode, getDefaultMode, t }: ApprovalMode
     if (mode === currentMode || switching) return
     setOpen(false)
     setSwitching(true)
-    
-    const error = await switchMode(mode)
-    if (error === null) {
-      setCurrentMode(mode as ApprovalMode)  // UI immediately updates
-    } else {
-      console.error('Failed to switch approval mode:', error)
+
+    try {
+      const error = await switchMode(mode)
+      if (error === null) {
+        setCurrentMode(mode as ApprovalMode)  // UI immediately updates
+      } else {
+        console.error('Failed to switch approval mode:', error)
+      }
+    } catch (err) {
+      console.error('Exception while switching approval mode:', err)
+    } finally {
+      setSwitching(false)
     }
-    
-    setSwitching(false)
   }
 
   const items = options.map((mode: string) => ({

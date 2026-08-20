@@ -1,12 +1,17 @@
 # dsh-user-approval
 
-**Version 0.1.1**
+**Version 0.1.2**
 
 [中文](./README.zh.md)
 
 User approval modes plugin for DeepSeek Harness. Provides four approval modes to control when tools require user confirmation before execution.
 
 用户审批模式插件，为 DeepSeek Harness 提供四种审批模式，控制工具执行前是否需要用户确认。
+
+## Demo
+
+![Approval Mode Selector Demo](./assets/example.webp)
+
 
 ## Features
 
@@ -114,6 +119,27 @@ The Web UI state is managed independently and syncs from the server on refresh:
 - Once supported, this plugin can migrate to event-driven approach and achieve full UI synchronization
 
 For technical details, see [`docs/2026-08-20-plugin-event-compatibility-issue.md`](docs/lessons-learned/2026-08-20-plugin-event-compatibility-issue.md).
+
+### DSH Version Compatibility
+
+**DSH 0.1.0-rc.7 API Breaking Change**:
+
+DSH introduced a breaking change to the `ctx.remote.commands.execute()` API in version `0.1.0-rc.7`:
+
+- **Old version** (≤0.1.0-rc.6): `execute(sessionId, line)` - 2 parameters
+- **New version** (≥0.1.0-rc.7): `execute(sessionId, line, images)` - 3 parameters, added `images` array
+
+**Impact**:
+- ✅ This plugin has been adapted to the new API (v0.1.2+)
+- ⚠️ Old plugin versions (≤0.1.1) do not work on DSH 0.1.0-rc.7+
+- ⚠️ TypeScript type definitions are inconsistent with the actual API (claims third parameter is `AbortSignal`, but it's actually `images` array)
+
+**Technical Details**:
+- The third parameter `images` supports multimodal commands (user-uploaded images)
+- For text-only commands (like `/approval-mode`), pass an empty array `[]`
+- This plugin uses type assertions to bypass incorrect TypeScript type checking
+
+See [`local-docs/lessons-learned/2026-08-20-commands-api-change.md`](local-docs/lessons-learned/2026-08-20-commands-api-change.md) for details.
 
 ## Usage
 

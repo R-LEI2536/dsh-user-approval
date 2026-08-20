@@ -22,3 +22,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Asset backups (keep only the final version in git)
+assets/example.gif

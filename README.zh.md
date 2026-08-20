@@ -1,10 +1,16 @@
 # dsh-user-approval
 
-**版本 0.1.1**
+**版本 0.1.2**
 
 [English](./README.md)
 
 用户审批模式插件，为 DeepSeek Harness 提供四种审批模式，控制工具执行前是否需要用户确认。
+
+## 演示
+
+![审批模式选择器演示](./assets/example.webp)
+
+动画展示了如何在 DSH Web 中使用 Web UI 选择器快速切换审批模式。
 
 ## 功能特性
 
@@ -151,6 +157,27 @@ Web UI 状态独立管理，刷新时从服务器同步：
 - 等待 DSH 上游提供插件自定义事件类型的官方支持
 - 或提供机制让插件发出可忽略的事件（ignorable events）
 - 一旦支持，本插件可以迁移到事件驱动方案，实现完整的 UI 同步
+
+### DSH 版本兼容性
+
+**DSH 0.1.0-rc.7 API 变更**：
+
+DSH 在 `0.1.0-rc.7` 版本中对 `ctx.remote.commands.execute()` API 进行了破坏性变更：
+
+- **旧版本** (≤0.1.0-rc.6): `execute(sessionId, line)` - 2 个参数
+- **新版本** (≥0.1.0-rc.7): `execute(sessionId, line, images)` - 3 个参数，新增 `images` 数组
+
+**影响**：
+- ✅ 本插件已适配新版本 API（v0.1.2+）
+- ⚠️ 旧版本插件（≤0.1.1）在 DSH 0.1.0-rc.7+ 上无法正常工作
+- ⚠️ TypeScript 类型定义与实际 API 不一致（声称第三个参数是 `AbortSignal`，实际是 `images` 数组）
+
+**技术细节**：
+- 第三个参数 `images` 用于支持多模态命令（用户上传图片）
+- 对于纯文本命令（如 `/approval-mode`），传递空数组 `[]` 即可
+- 本插件使用类型断言绕过错误的 TypeScript 类型检查
+
+详见 [`local-docs/lessons-learned/2026-08-20-commands-api-change.md`](local-docs/lessons-learned/2026-08-20-commands-api-change.md)。
 
 ### Composer 工具行布局
 

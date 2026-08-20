@@ -41,16 +41,30 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     inject: (sessionId: SessionId): ApprovalModeChipInjected => ({
       switchMode: async (mode: string) => {
-        const result = await ctx.remote.commands.execute(sessionId, `/approval-mode ${mode}`)
-        if (!result.ok) return `${result.error.message} (${result.error.code})`
-        if (result.value === undefined) return 'unknown command: /approval-mode'
+        console.log('[approval-mode] Switching to mode:', mode)
+        // Third parameter is images array (empty for commands), but TypeScript says AbortSignal
+        // This is a type mismatch in DSH's type definitions
+        const result = await ctx.remote.commands.execute(sessionId, `/approval-mode ${mode}`, [] as unknown as AbortSignal)
+        console.log('[approval-mode] Command result:', result)
+        if (!result.ok) {
+          console.error('[approval-mode] Command failed:', result.error)
+          return `${result.error.message} (${result.error.code})`
+        }
+        if (result.value === undefined) {
+          console.error('[approval-mode] No result value')
+          return 'unknown command: /approval-mode'
+        }
         // The remote call succeeded but the command handler rejected the mode.
-        if (result.value.result.kind === 'error') return result.value.result.text
+        if (result.value.result.kind === 'error') {
+          console.error('[approval-mode] Command handler error:', result.value.result.text)
+          return result.value.result.text
+        }
+        console.log('[approval-mode] Successfully switched to:', mode)
         return null
       },
       getDefaultMode: async () => {
         // Get current approval mode by querying the command
-        const result = await ctx.remote.commands.execute(sessionId, '/approval-mode')
+        const result = await ctx.remote.commands.execute(sessionId, '/approval-mode', [] as unknown as AbortSignal)
         if (result.ok && result.value?.result.kind === 'success') {
           // Parse mode from "current approval mode: <mode> (available: ...)"
           const text = result.value.result.text
