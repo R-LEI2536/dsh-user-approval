@@ -1,6 +1,6 @@
 # dsh-user-approval
 
-**Version 0.1.0**
+**Version 0.1.1**
 
 [中文](./README.zh.md)
 
@@ -73,7 +73,8 @@ dsh plugin --profile web add /path/to/dsh-user-approval
 This plugin uses an **in-memory storage** approach to avoid compatibility issues with DSH session event types. As a result:
 
 - ✅ **Sessions load successfully** after DSH restart (no compatibility issues)
-- ⚠️ **Approval mode resets to default** after DSH restart or client refresh
+- ⚠️ **Approval mode resets to default** after DSH restart (backend WeakMap cleared)
+- ✅ **UI syncs from server** on browser refresh, reflecting actual mode
 - ✅ **Approval mode persists** during the current session
 
 **Why this design?**
@@ -87,11 +88,12 @@ This plugin uses an **in-memory storage** approach to avoid compatibility issues
 
 ### UI State Synchronization
 
-Due to the in-memory approach, the Web UI state is managed independently:
+The Web UI state is managed independently and syncs from the server on refresh:
 
 - ✅ **UI updates immediately** when using the Web UI selector
+- ✅ **UI syncs from server** on browser refresh
 - ⚠️ **UI does not auto-update** when using the `/approval-mode` command
-- ⚠️ **UI shows stale value** if you switch modes via command
+- ⚠️ **UI shows stale value** if you switch modes via command (until refresh)
 
 **Workaround**:
 - Refresh the web page to sync the UI with the actual mode
@@ -265,8 +267,8 @@ The plugin automatically classifies tools into four families:
 3. **Mode Check**: Evaluates current approval mode
 4. **Decision**: Returns `{ kind: 'ask' }` for tools requiring approval, or allows execution
 5. **Sandbox Sync**: Automatically adjusts sandbox policy when switching modes
-6. **State Persistence**: Approval mode stored as session events (`approval/mode`), not in-memory
-7. **UI Synchronization**: Web UI chip reflects real-time mode changes via session projection
+6. **State Storage**: Approval mode stored in-memory (WeakMap), resets on DSH restart
+7. **UI Synchronization**: Web UI chip manages state via React, syncs from server on refresh
 
 ## Dependencies
 
