@@ -107,18 +107,39 @@ dsh plugin --profile web add /path/to/dsh-user-approval
 
 ## 已知限制
 
-### 旧版本 DSH 兼容性
+### 会话重启行为
 
-本插件使用自定义会话事件类型 `approval/mode` 持久化审批模式状态。旧版本 DSH（不支持插件事件类型）可能无法加载包含此类事件的会话日志，导致错误：
+本插件使用**内存存储方案**来避免 DSH 会话事件类型的兼容性问题。因此：
 
-```
-SessionFormatUnsupportedError: session contains event type "approval/mode" unknown to this harness
-```
+- ✅ **会话加载成功**：DSH 重启后会话可以正常加载（无兼容性问题）
+- ⚠️ **审批模式恢复默认**：DSH 重启或客户端刷新后，审批模式恢复为默认值
+- ✅ **当前会话有效**：审批模式在当前会话期间保持
 
-**解决方案**：
-1. **升级 DSH**：使用支持插件事件类型的最新版本
-2. **清理会话日志**：删除包含 `approval/mode` 事件的旧会话（`~/.dsh/sessions/` 目录）
-3. **临时禁用插件**：在配置中设置 `disabled: true` 或切换到 `off` 模式
+**为什么这样设计？**
+- DSH 目前不支持插件自定义事件类型
+- 写入自定义事件会导致重启后出现 `SessionFormatUnsupportedError`
+- 内存存储确保会话在各个 DSH 版本间保持兼容
+
+**解决方法**：
+- 重启后使用 `/approval-mode` 命令快速切换模式
+- 或使用 Web UI 选择器切换模式
+
+### UI 状态同步
+
+由于使用内存方案，Web UI 状态独立管理：
+
+- ✅ **UI 立即更新**：使用 Web UI 选择器时立即更新显示
+- ⚠️ **UI 不同步命令**：使用 `/approval-mode` 命令时 UI 不会自动更新
+- ⚠️ **UI 显示旧值**：通过命令切换模式后，UI 显示的是旧值
+
+**解决方法**：
+- 刷新网页以同步 UI 和实际模式
+- 或直接使用 Web UI 选择器，而不是命令
+
+**为什么有这个限制？**
+- UI 通过 React `useState` 独立管理状态
+- 命令在服务端执行，但不会触发 UI 更新
+- 实现实时同步需要额外的复杂度
 
 ### Composer 工具行布局
 

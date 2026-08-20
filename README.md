@@ -85,6 +85,23 @@ This plugin uses an **in-memory storage** approach to avoid compatibility issues
 - Use the `/approval-mode` command to quickly switch modes after restart
 - Or use the Web UI selector to change modes
 
+### UI State Synchronization
+
+Due to the in-memory approach, the Web UI state is managed independently:
+
+- ✅ **UI updates immediately** when using the Web UI selector
+- ⚠️ **UI does not auto-update** when using the `/approval-mode` command
+- ⚠️ **UI shows stale value** if you switch modes via command
+
+**Workaround**:
+- Refresh the web page to sync the UI with the actual mode
+- Or simply use the Web UI selector instead of the command
+
+**Why this limitation?**
+- The UI manages its own state via React `useState`
+- Commands execute on the server side, but don't trigger UI updates
+- Implementing real-time sync would require additional complexity
+
 For technical details, see [`docs/lessons-learned/2026-08-20-plugin-event-compatibility-issue.md`](docs/lessons-learned/2026-08-20-plugin-event-compatibility-issue.md).
 
 ## Usage
