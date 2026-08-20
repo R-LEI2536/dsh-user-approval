@@ -34,12 +34,12 @@ export function ApprovalModeChip({ switchMode, getDefaultMode, t }: ApprovalMode
   const [open, setOpen] = useState(false)
   const [switching, setSwitching] = useState(false)
 
-  // Initialize with default mode from server config
+  // Initialize mode: always fetch from server to ensure sync after DSH restart
   useEffect(() => {
     getDefaultMode().then((mode) => {
       setCurrentMode(mode as ApprovalMode)
     }).catch(() => {
-      // Keep default 'off' if failed to get default mode
+      // Keep default 'off' if failed to get mode
     })
   }, [getDefaultMode])
 
