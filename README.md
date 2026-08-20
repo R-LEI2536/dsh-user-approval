@@ -104,6 +104,11 @@ Due to the in-memory approach, the Web UI state is managed independently:
 - This is a **fundamental trade-off**: either use events (but sessions won't load), or use memory (but UI won't sync)
 - We chose memory storage to ensure sessions load successfully
 
+**Future improvement**:
+- Waiting for DSH upstream to provide official support for custom event types
+- Or provide a mechanism for plugins to emit ignorable events
+- Once supported, this plugin can migrate to event-driven approach and achieve full UI synchronization
+
 For technical details, see [`docs/lessons-learned/2026-08-20-plugin-event-compatibility-issue.md`](docs/lessons-learned/2026-08-20-plugin-event-compatibility-issue.md).
 
 ## Usage

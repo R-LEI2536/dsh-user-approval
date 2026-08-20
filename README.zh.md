@@ -143,6 +143,11 @@ dsh plugin --profile web add /path/to/dsh-user-approval
 - 这是一个**根本性的权衡**：要么使用事件（但会话无法加载），要么使用内存（但 UI 不同步）
 - 我们选择了内存方案，确保会话可以正常加载
 
+**未来改进**：
+- 等待 DSH 上游提供插件自定义事件类型的官方支持
+- 或提供机制让插件发出可忽略的事件（ignorable events）
+- 一旦支持，本插件可以迁移到事件驱动方案，实现完整的 UI 同步
+
 ### Composer 工具行布局
 
 审批模式芯片注册在 composer 工具行的 `conversation.input.left` 座位，位于访问模式（权限）芯片旁边。当进入计划模式（`/plan`）时，平台会在 `conversation.input.plan` 座位渲染橘色的计划状态芯片 —— 该座位是平台命名的高占用（single）座位，harness 固定把它放在访问模式控件右侧 —— 因此计划框会出现在权限芯片与审批芯片之间。
