@@ -21,6 +21,8 @@ User approval modes plugin for DeepSeek Harness. Provides four approval modes to
 
 ## Approval Modes
 
+The four approval modes are inspired by [Qwen Code](https://github.com/QwenLM/Qwen-Code).
+
 | Mode | Edit Tools | Shell Tools | Other Tools | Read-Only Tools | Use Case |
 |------|-----------|-------------|-------------|----------------|----------|
 | `request` | Ask | Ask | Ask | Allow | Maximum security, all modifications require approval |
