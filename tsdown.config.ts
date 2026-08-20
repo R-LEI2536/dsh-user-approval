@@ -2,9 +2,7 @@ import { defineConfig } from 'tsdown'
 import { readFile } from 'node:fs/promises'
 import { transform } from 'lightningcss'
 import { basename, resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
 const PLUGIN_ID = 'dsh-user-approval'
 
 // External dependencies (platform modules)
@@ -61,7 +59,7 @@ export default defineConfig({
           minify: true,
         })
         
-        const classMap = {}
+        const classMap: Record<string, string> = {}
         for (const [local, exp] of Object.entries(cssExports || {})) {
           classMap[local] = exp.name
         }
