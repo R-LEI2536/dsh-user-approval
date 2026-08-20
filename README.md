@@ -98,9 +98,11 @@ Due to the in-memory approach, the Web UI state is managed independently:
 - Or simply use the Web UI selector instead of the command
 
 **Why this limitation?**
-- The UI manages its own state via React `useState`
-- Commands execute on the server side, but don't trigger UI updates
-- Implementing real-time sync would require additional complexity
+- The UI manages its own state via React `useState` (in-memory approach)
+- Commands execute on the server, but don't emit events (to avoid compatibility issues)
+- Without events, there's no mechanism to notify the UI of changes
+- This is a **fundamental trade-off**: either use events (but sessions won't load), or use memory (but UI won't sync)
+- We chose memory storage to ensure sessions load successfully
 
 For technical details, see [`docs/lessons-learned/2026-08-20-plugin-event-compatibility-issue.md`](docs/lessons-learned/2026-08-20-plugin-event-compatibility-issue.md).
 
