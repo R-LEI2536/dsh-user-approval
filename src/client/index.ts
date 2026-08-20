@@ -48,6 +48,19 @@ export function apply(ctx: ClientContext): void {
         if (result.value.result.kind === 'error') return result.value.result.text
         return null
       },
+      getDefaultMode: async () => {
+        // Get current approval mode by querying the command
+        const result = await ctx.remote.commands.execute(sessionId, '/approval-mode')
+        if (result.ok && result.value?.result.kind === 'success') {
+          // Parse mode from "current approval mode: <mode> (available: ...)"
+          const text = result.value.result.text
+          if (text) {
+            const match = text.match(/current approval mode: (\w+)/)
+            return match ? match[1] : 'off'
+          }
+        }
+        return 'off'
+      },
     }),
   }, ApprovalModeChip))
 }

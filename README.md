@@ -15,7 +15,7 @@ User approval modes plugin for DeepSeek Harness. Provides four approval modes to
 - **Tool Family Classification**: Automatically categorizes tools into edit, shell, readonly, and other families
 - **Sandbox Integration**: Automatically adjusts sandbox policy when switching modes
 - **Session-Scoped**: Each session maintains its own approval mode
-- **Persistent State**: Approval mode stored as session events, survives restarts
+- **In-Memory State**: Approval mode stored in memory, resets to default on DSH restart
 - **Settings Integration**: Configure default approval mode for new sessions
 - **Slash Command**: Switch modes via `/approval-mode` command
 
@@ -65,6 +65,27 @@ dsh plugin --profile web add github:R-LEI2536/dsh-user-approval
 ```bash
 dsh plugin --profile web add /path/to/dsh-user-approval
 ```
+
+## Known Limitations
+
+### Session Restart Behavior
+
+This plugin uses an **in-memory storage** approach to avoid compatibility issues with DSH session event types. As a result:
+
+- ✅ **Sessions load successfully** after DSH restart (no compatibility issues)
+- ⚠️ **Approval mode resets to default** after DSH restart or client refresh
+- ✅ **Approval mode persists** during the current session
+
+**Why this design?**
+- DSH currently does not support custom event types in plugins
+- Writing custom events would cause `SessionFormatUnsupportedError` after restart
+- In-memory storage ensures sessions remain compatible across DSH versions
+
+**Workaround**:
+- Use the `/approval-mode` command to quickly switch modes after restart
+- Or use the Web UI selector to change modes
+
+For technical details, see [`docs/lessons-learned/2026-08-20-plugin-event-compatibility-issue.md`](docs/lessons-learned/2026-08-20-plugin-event-compatibility-issue.md).
 
 ## Usage
 

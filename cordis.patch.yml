@@ -6,7 +6,7 @@
         default: off
         editTools: ['write', 'edit', 'str_replace_editor']
         shellTools: ['bash', 'pwsh', 'tool:bash', 'tool:pwsh']
-        readOnlyTools: ['read', 'glob', 'grep', 'read_image', 'list_dir']
+        readOnlyTools: ['read', 'glob', 'grep', 'read_image', 'list_directory', 'todo_write']
         autoAllowTools: ['ask_user_question', 'exit_plan_mode']
         unclassified: ask
         sandboxDefaults:

@@ -107,6 +107,19 @@ dsh plugin --profile web add /path/to/dsh-user-approval
 
 ## 已知限制
 
+### 旧版本 DSH 兼容性
+
+本插件使用自定义会话事件类型 `approval/mode` 持久化审批模式状态。旧版本 DSH（不支持插件事件类型）可能无法加载包含此类事件的会话日志，导致错误：
+
+```
+SessionFormatUnsupportedError: session contains event type "approval/mode" unknown to this harness
+```
+
+**解决方案**：
+1. **升级 DSH**：使用支持插件事件类型的最新版本
+2. **清理会话日志**：删除包含 `approval/mode` 事件的旧会话（`~/.dsh/sessions/` 目录）
+3. **临时禁用插件**：在配置中设置 `disabled: true` 或切换到 `off` 模式
+
 ### Composer 工具行布局
 
 审批模式芯片注册在 composer 工具行的 `conversation.input.left` 座位，位于访问模式（权限）芯片旁边。当进入计划模式（`/plan`）时，平台会在 `conversation.input.plan` 座位渲染橘色的计划状态芯片 —— 该座位是平台命名的高占用（single）座位，harness 固定把它放在访问模式控件右侧 —— 因此计划框会出现在权限芯片与审批芯片之间。
@@ -206,7 +219,7 @@ approval needed for {tool} under {mode} mode ({family}); read-only browsing shou
 3. **模式检查**：评估当前审批模式
 4. **决策**：对需要审批的工具返回 `{ kind: 'ask' }`，或允许执行
 5. **沙箱同步**：切换模式时自动调整沙箱策略
-6. **状态持久化**：审批模式存储为会话事件（`approval/mode`），而非内存
+6. **持久化状态**：审批模式存储为会话事件（`approval/mode`），重启后保持
 7. **UI同步**：Web UI芯片通过会话投影实时反映模式变化
 
 ## 依赖

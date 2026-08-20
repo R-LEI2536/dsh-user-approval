@@ -15,6 +15,9 @@
  * request/auto-edit/yolo → 配置默认（默认 workspace-write）；off → 组合默认。
  * 三个旋钮（approval/mode、sandbox/mode、approval/policy）互相独立、last-write-wins。
  *
+ * **会话兼容性**：本插件使用内存存储方案（WeakMap），确保会话在 DSH 重启后可以正常加载。
+ * 审批模式在 DSH 重启后会恢复为默认值。详见 README.md 的 "Known Limitations" 部分。
+ *
  * @module dsh-user-approval
  */
 
@@ -27,26 +30,6 @@ import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-sett
 import type {} from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-commands'
 import type {} from '@deepseek-ai/dsh-session-projection'
-import { z } from 'zod'
-
-// 扩展 SessionProjectionMap 类型声明
-declare module '@deepseek-ai/dsh-session-projection/types' {
-  interface SessionProjectionMap {
-    approvalMode: { mode: string; options: string[] }
-  }
-}
-
-// 审批模式切换本身就是一条会话事件（`approval/mode`，log-only，不入模型 transcript）：
-// 与 sandbox-policy 的 `sandbox/mode` 同一模式 —— session log 即存储，
-// 可重放、可持久化，投影注册表（session/event 驱动）因此能看到每一次切换。
-declare module '@deepseek-ai/dsh-session/types' {
-  interface SessionEventMap {
-    /** 会话审批模式切换（log-only，非 surface 事件）。最后一条即当前覆盖。 */
-    'approval/mode': {
-      mode: ApprovalMode
-    }
-  }
-}
 
 // 扩展 Context 类型声明（仅声明 shell，因为 sandboxPolicy 和 sessions 已在其他包中声明）
 declare module '@deepseek-ai/cordis' {
@@ -66,6 +49,10 @@ export const APPROVAL_MODES: readonly ApprovalMode[] = ['request', 'auto-edit', 
 
 /** 工具族分类：编辑、shell、只读、未分类。 */
 type ToolFamily = 'edit' | 'shell' | 'readonly' | 'other'
+
+// 使用 WeakMap 存储会话审批模式（内存方案）
+// DSH 重启后审批模式会恢复为默认值，但会话可以正常加载
+const sessionModes = new WeakMap<Session, ApprovalMode>()
 
 /** 插件配置。全部带默认值，部署方可在 cordis.yml 覆盖。 */
 export interface Config {
@@ -105,28 +92,22 @@ export const Config: Schema<Config> = Schema.object({
 })
 
 /**
- * Get the approval mode for a session: fold its log for the last
- * `approval/mode` event; without one, fall back to the given default.
+ * Get the approval mode for a session from memory.
  * @param session - The session to query.
  * @param defaultMode - The default mode to return if the session never switched.
  * @returns The session's mode, or defaultMode if not set.
  */
 export function getApprovalMode(session: Session, defaultMode: ApprovalMode): ApprovalMode {
-  for (let index = session.events.length - 1; index >= 0; index -= 1) {
-    const event = session.events[index] as SessionEvent
-    if (event.type === 'approval/mode') return event.data.mode
-  }
-  return defaultMode
+  return sessionModes.get(session) ?? defaultMode
 }
 
 /**
- * Set the approval mode for a session by appending exactly one `approval/mode`
- * event — the switch IS its event; nothing mutates mode state out of band.
+ * Set the approval mode for a session in memory.
  * @param session - The session to update.
  * @param mode - The mode to set.
  */
 export function setApprovalMode(session: Session, mode: ApprovalMode): void {
-  session.append('approval/mode', { mode })
+  sessionModes.set(session, mode)
 }
 
 export function apply(ctx: Context, config: Config): void {
@@ -227,29 +208,5 @@ export function apply(ctx: Context, config: Config): void {
   installSettingsSection(ctx, settingsNamespace('approval-mode'), settingsSchema, { default: cfg.default }, {
     setSource: (current) => { defaultSettings = current },
     onChange: () => {},
-  })
-
-  // ── 投影：把 `approval/mode` 会话事件折叠成客户端 UI 的值 ─────────────
-  ctx.inject(['sessionProjections'], (projectionCtx) => {
-    const schema = z.object({
-      mode: z.string(),
-      options: z.array(z.string())
-    })
-
-    projectionCtx.sessionProjections.register({
-      key: 'approvalMode',
-      schema,
-      init: () => ({ mode: '' }),
-      apply: (state: { mode: string }, event: SessionEvent) => {
-        // 折叠 log：最后一次 `approval/mode` 事件即当前覆盖；无关事件原样返回。
-        if (event.type !== 'approval/mode') return state
-        return { mode: event.data.mode }
-      },
-      view: (state: { mode: string }) => ({
-        mode: state.mode || defaultSettings().default,
-        options: [...APPROVAL_MODES]
-      }),
-      stateVersion: 2,
-    })
   })
 }

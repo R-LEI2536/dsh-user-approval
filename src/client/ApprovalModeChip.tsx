@@ -1,7 +1,7 @@
 /**
  * ApprovalModeChip: the composer dock entry for switching approval modes.
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { PropsRuntime, InjectFace } from '@deepseek-ai/dsh-client-ui-slots'
 import { Menu, IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ApprovalMode } from '../index'
@@ -12,6 +12,8 @@ import css from './ApprovalModeChip.module.css'
 export interface ApprovalModeChipInjected {
   /** Switch to a new approval mode by executing the /approval-mode command. */
   switchMode: (mode: string) => Promise<string | null>
+  /** Get the default approval mode from server config. */
+  getDefaultMode: () => Promise<string>
 }
 
 /** Full component props: runtime share + injected share + locale seat. */
@@ -27,25 +29,34 @@ const DEFAULT_MODES: ApprovalMode[] = ['off', 'request', 'auto-edit', 'yolo']
  * @param props - composed slot props.
  * @returns the chip element.
  */
-export function ApprovalModeChip({ useProjection, switchMode, t }: ApprovalModeChipProps) {
-  const projection = useProjection('approvalMode')
+export function ApprovalModeChip({ switchMode, getDefaultMode, t }: ApprovalModeChipProps) {
+  const [currentMode, setCurrentMode] = useState<ApprovalMode>('off')
   const [open, setOpen] = useState(false)
   const [switching, setSwitching] = useState(false)
 
-  // Projection might be undefined if the host plugin is not loaded
-  if (projection === undefined) return null
+  // Initialize with default mode from server config
+  useEffect(() => {
+    getDefaultMode().then((mode) => {
+      setCurrentMode(mode as ApprovalMode)
+    }).catch(() => {
+      // Keep default 'off' if failed to get default mode
+    })
+  }, [getDefaultMode])
 
-  const currentMode = projection.mode ?? 'off'
-  const options = projection.options ?? DEFAULT_MODES
+  const options = DEFAULT_MODES
 
   const handleSelect = async (mode: string): Promise<void> => {
     if (mode === currentMode || switching) return
     setOpen(false)
     setSwitching(true)
+    
     const error = await switchMode(mode)
-    if (error !== null) {
+    if (error === null) {
+      setCurrentMode(mode as ApprovalMode)  // UI immediately updates
+    } else {
       console.error('Failed to switch approval mode:', error)
     }
+    
     setSwitching(false)
   }
 
