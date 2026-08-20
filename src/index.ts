@@ -36,6 +36,18 @@ declare module '@deepseek-ai/dsh-session-projection/types' {
   }
 }
 
+// 审批模式切换本身就是一条会话事件（`approval/mode`，log-only，不入模型 transcript）：
+// 与 sandbox-policy 的 `sandbox/mode` 同一模式 —— session log 即存储，
+// 可重放、可持久化，投影注册表（session/event 驱动）因此能看到每一次切换。
+declare module '@deepseek-ai/dsh-session/types' {
+  interface SessionEventMap {
+    /** 会话审批模式切换（log-only，非 surface 事件）。最后一条即当前覆盖。 */
+    'approval/mode': {
+      mode: ApprovalMode
+    }
+  }
+}
+
 // 扩展 Context 类型声明（仅声明 shell，因为 sandboxPolicy 和 sessions 已在其他包中声明）
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -45,8 +57,6 @@ declare module '@deepseek-ai/cordis' {
   }
 }
 
-/** In-memory storage for session approval modes (process-local, not persisted). */
-const sessionModes = new WeakMap<Session, ApprovalMode>()
 export const name = 'dsh-user-approval'
 
 /** 审批模式闭值。`ask` 留给 approval policy，这里不用。 */
@@ -95,22 +105,28 @@ export const Config: Schema<Config> = Schema.object({
 })
 
 /**
- * Get the approval mode for a session from in-memory storage.
+ * Get the approval mode for a session: fold its log for the last
+ * `approval/mode` event; without one, fall back to the given default.
  * @param session - The session to query.
- * @param defaultMode - The default mode to return if not set.
+ * @param defaultMode - The default mode to return if the session never switched.
  * @returns The session's mode, or defaultMode if not set.
  */
 export function getApprovalMode(session: Session, defaultMode: ApprovalMode): ApprovalMode {
-  return sessionModes.get(session) ?? defaultMode
+  for (let index = session.events.length - 1; index >= 0; index -= 1) {
+    const event = session.events[index] as SessionEvent
+    if (event.type === 'approval/mode') return event.data.mode
+  }
+  return defaultMode
 }
 
 /**
- * Set the approval mode for a session in in-memory storage.
+ * Set the approval mode for a session by appending exactly one `approval/mode`
+ * event — the switch IS its event; nothing mutates mode state out of band.
  * @param session - The session to update.
  * @param mode - The mode to set.
  */
 export function setApprovalMode(session: Session, mode: ApprovalMode): void {
-  sessionModes.set(session, mode)
+  session.append('approval/mode', { mode })
 }
 
 export function apply(ctx: Context, config: Config): void {
@@ -213,34 +229,27 @@ export function apply(ctx: Context, config: Config): void {
     onChange: () => {},
   })
 
-  // ── pin：新会话初始化默认模式（缺席时 get 即配置默认，语义等价） ────
-  const pin = (session: Session): void => {
-    if (!sessionModes.has(session)) setApprovalMode(session, defaultSettings().default)
-  }
-  ctx.on('session/created', (session) => { pin(session) })
-  const sessions = ctx.get('sessions') as { list(): Session[] } | undefined
-  for (const session of sessions?.list() ?? []) pin(session)
-
-  // ── 投影：为客户端 UI 留路（芯片/快捷键后续再做） ─────────────────────
+  // ── 投影：把 `approval/mode` 会话事件折叠成客户端 UI 的值 ─────────────
   ctx.inject(['sessionProjections'], (projectionCtx) => {
     const schema = z.object({
       mode: z.string(),
       options: z.array(z.string())
     })
-    
+
     projectionCtx.sessionProjections.register({
       key: 'approvalMode',
       schema,
       init: () => ({ mode: '' }),
-      apply: (state: { mode: string }, _event: SessionEvent) => {
-        // No longer tracking approval/mode events; state remains unchanged
-        return state
+      apply: (state: { mode: string }, event: SessionEvent) => {
+        // 折叠 log：最后一次 `approval/mode` 事件即当前覆盖；无关事件原样返回。
+        if (event.type !== 'approval/mode') return state
+        return { mode: event.data.mode }
       },
-      view: (state: { mode: string }) => ({ 
-        mode: state.mode || defaultSettings().default, 
-        options: [...APPROVAL_MODES] 
+      view: (state: { mode: string }) => ({
+        mode: state.mode || defaultSettings().default,
+        options: [...APPROVAL_MODES]
       }),
-      stateVersion: 1,
+      stateVersion: 2,
     })
   })
 }

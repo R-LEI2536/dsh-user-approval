@@ -43,6 +43,8 @@ export function apply(ctx: ClientContext): void {
         const result = await ctx.remote.commands.execute(sessionId, `/approval-mode ${mode}`)
         if (!result.ok) return `${result.error.message} (${result.error.code})`
         if (result.value === undefined) return 'unknown command: /approval-mode'
+        // The remote call succeeded but the command handler rejected the mode.
+        if (result.value.result.kind === 'error') return result.value.result.text
         return null
       },
     }),
