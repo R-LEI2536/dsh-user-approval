@@ -8,8 +8,8 @@ node_modules/
 # Documentation
 tutorial/
 
-# Lessons learned and docs (development notes)
-docs/
+# Development notes (not for users)
+local-docs/
 
 # IDE
 .vscode/
