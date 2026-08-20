@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "zod": "^4.4.3",
-    "dsh-tool-list-dir": "github:R-LEI2536/dsh-tool-list-dir"
+    "@rh854lkjd/dsh-tool-list-dir": ">=0.2.0"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
