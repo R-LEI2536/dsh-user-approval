@@ -1,5 +1,6 @@
 /**
- * Client plugin: registers the approval mode chip in the composer dock.
+ * Client plugin: registers the approval mode chip in the composer tool row,
+ * beside the access-mode (permission) chip.
  */
 import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
 // Type-only: pulls the ui-conversation SlotMap merge (the composer.dock seat).
@@ -33,10 +34,10 @@ export const inject = ['slots', 'remote', 'remote.commands', 'locale']
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-user-approval: dictionaries')
 
-  ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register({
-    name: 'conversation.composer.dock',
+  ctx.slots.inject('conversation.input.left', () => ctx.slots.register({
+    name: 'conversation.input.left',
     id: 'approval-mode',
-    order: 10, // After StatsLine
+    order: 10, // After the resident chrome (access-mode chip, plan seat)
     locale: NS,
     inject: (sessionId: SessionId): ApprovalModeChipInjected => ({
       switchMode: async (mode: string) => {

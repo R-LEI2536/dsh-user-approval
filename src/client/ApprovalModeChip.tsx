@@ -16,7 +16,7 @@ export interface ApprovalModeChipInjected {
 
 /** Full component props: runtime share + injected share + locale seat. */
 export type ApprovalModeChipProps =
-  PropsRuntime<'conversation.composer.dock'>
+  PropsRuntime<'conversation.input.left'>
   & InjectFace<ApprovalModeChipInjected>
   & { t: (key: ApprovalKey) => string }
 
@@ -75,7 +75,7 @@ export function ApprovalModeChip({ useProjection, switchMode, t }: ApprovalModeC
           >
             <span className={css.label}>{t('label')}</span>
             <span className={css.mode}>{t(`mode.${currentMode}` as ApprovalKey)}</span>
-            <IconChevronDownOutline14 className={css.chevron} />
+            <IconChevronDownOutline14 className={open ? `${css.chevron} ${css.chevronOpen}` : css.chevron} />
           </button>
         )}
       />

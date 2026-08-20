@@ -1,19 +1,21 @@
 .container {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  padding: 0 8px;
 }
 
 .trigger {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
+  height: 28px;
+  padding: 0 8px 0 12px;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
   color: var(--dsw-alias-label-secondary);
   background: transparent;
   border: 1px solid var(--dsw-alias-border-l1);
-  border-radius: 6px;
+  border-radius: 999px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -21,6 +23,7 @@
 .trigger:hover:not(:disabled) {
   color: var(--dsw-alias-label-primary);
   border-color: var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-interactive-bg-hover);
 }
 
 .trigger:disabled {
@@ -38,6 +41,23 @@
 }
 
 .chevron {
+  display: inline-flex;
+  flex: 0 0 auto;
   width: 14px;
   height: 14px;
+  color: var(--dsw-alias-label-caption);
+  transition: transform 120ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* Narrow composer: collapse to mode + chevron so the tool row keeps fitting
+   (same 460px cut as the sibling permission chip; the container is the
+   composer row — anonymous query because CSS modules hash container names). */
+@container (max-width: 460px) {
+  .trigger .label {
+    display: none;
+  }
 }
