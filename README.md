@@ -11,9 +11,11 @@ User approval modes plugin for DeepSeek Harness. Provides four approval modes to
 ## Features
 
 - **Four Approval Modes**: `request`, `auto-edit`, `yolo`, `off`
+- **Web UI Mode Selector**: Quick-switch chip under the input box for changing approval modes without commands
 - **Tool Family Classification**: Automatically categorizes tools into edit, shell, readonly, and other families
 - **Sandbox Integration**: Automatically adjusts sandbox policy when switching modes
 - **Session-Scoped**: Each session maintains its own approval mode
+- **Persistent State**: Approval mode stored as session events, survives restarts
 - **Settings Integration**: Configure default approval mode for new sessions
 - **Slash Command**: Switch modes via `/approval-mode` command
 
@@ -66,7 +68,18 @@ dsh plugin --profile web add link:/path/to/dsh-user-approval
 
 ## Usage
 
-### Switch Approval Mode
+### Using the Web UI Mode Selector
+
+The plugin provides a visual mode selector chip under the input box in DSH Web:
+
+- Click the chip to open a dropdown menu
+- Select the desired approval mode from the list
+- Current mode is highlighted and displayed in the chip
+- Available modes: `Off`, `Request`, `Auto-edit`, `Yolo`
+
+This is the easiest way to switch modes without typing commands.
+
+### Switch Approval Mode via Command
 
 Use the `/approval-mode` command in the DSH Web GUI:
 
@@ -210,6 +223,8 @@ The plugin automatically classifies tools into four families:
 3. **Mode Check**: Evaluates current approval mode
 4. **Decision**: Returns `{ kind: 'ask' }` for tools requiring approval, or allows execution
 5. **Sandbox Sync**: Automatically adjusts sandbox policy when switching modes
+6. **State Persistence**: Approval mode stored as session events (`approval/mode`), not in-memory
+7. **UI Synchronization**: Web UI chip reflects real-time mode changes via session projection
 
 ## Dependencies
 
