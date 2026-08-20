@@ -97,6 +97,14 @@ dsh plugin --profile web add link:/path/to/dsh-user-approval
 # 所有工具无需审批即可执行
 ```
 
+## 已知限制
+
+### Composer 工具行布局
+
+审批模式芯片注册在 composer 工具行的 `conversation.input.left` 座位，位于访问模式（权限）芯片旁边。当进入计划模式（`/plan`）时，平台会在 `conversation.input.plan` 座位渲染橘色的计划状态芯片 —— 该座位是平台命名的高占用（single）座位，harness 固定把它放在访问模式控件右侧 —— 因此计划框会出现在权限芯片与审批芯片之间。
+
+这一顺序由平台布局固定：`ui-conversation` 的 `InputBar` 在 "modes" 簇内、`conversation.input.left` 条目之前渲染 `conversation.input.plan`。插件无法在不重画整个计划控件的前提下移动该座位，而移动它需要对 `ui-conversation` 做平台级改动，本插件刻意不做。保持现状。
+
 ## 配置
 
 ### 基本使用（使用所有默认值）

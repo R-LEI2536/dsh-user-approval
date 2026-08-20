@@ -99,6 +99,24 @@ Use the `/approval-mode` command in the DSH Web GUI:
 # All tools execute without approval
 ```
 
+## Known Limitations
+
+### Composer Tool Row Layout
+
+The approval mode chip is registered in the `conversation.input.left` slot of the
+composer tool row, beside the access-mode (permission) chip. When plan mode is
+active (`/plan`), the platform renders its orange plan-status chip in the
+`conversation.input.plan` seat — a named single-occupant seat the harness places
+immediately right of the access-mode control — so the plan chip appears between
+the permission chip and the approval chip.
+
+This order is fixed by the platform layout: `ui-conversation`'s `InputBar`
+renders `conversation.input.plan` inside its "modes" cluster, before the
+`conversation.input.left` entries. A plugin cannot move the plan seat without
+re-rendering the entire plan control, and relocating it would require a
+platform-level change to `ui-conversation`, which this plugin deliberately
+avoids. Accepted as-is.
+
 ## Configuration
 
 ### Basic Usage (with all defaults)
